@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "spring-boot-app"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Clone the repository
+                git 'https://github.com/rajeshboda/java-ci-cd.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    // Build Docker image
+                    sh 'docker build -t $DOCKER_IMAGE .'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    // Stop and remove any existing container to avoid conflicts
+                    sh 'docker stop spring-boot-app || true'
+                    sh 'docker rm spring-boot-app || true'
+
+                    // Run Docker container mapping port 8008 on host to port 7000 in the container
+                    sh 'docker run -d -p 8008:7000 --name spring-boot-app $DOCKER_IMAGE'
+                }
+            }
+        }
+
+        
+    }
+
+}
